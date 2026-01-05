@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "parkourworldgen",
+	"version": "${version}",
+	"name": "ParkourWorldGen",
+	"description": "Modifies terrain to mimic Evbo's Parkour Civilization.",
+	"authors": [
+		"Jamie Clash"
+	],
+	"contact": {
+		"homepage": "https://youtube.com/@JamieClash",
+		"sources": "https://github.com/JamieClash/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/parkourworldgen/icon.jpg",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"me.jamieclash.parkourworldgen.ParkourWorldGen"
+		],
+		"fabric-datagen": [
+			"me.jamieclash.parkourworldgen.ParkourWorldGenDataGenerator"
+		],
+		"client": [
+			"me.jamieclash.parkourworldgen.ParkourWorldGenClient"
+		]
+	},
+	"mixins": [
+		"parkourworldgen.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
