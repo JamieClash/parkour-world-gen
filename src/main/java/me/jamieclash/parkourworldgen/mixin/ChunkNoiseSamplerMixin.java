@@ -74,7 +74,7 @@ public class ChunkNoiseSamplerMixin {
                 original.erosion(),
                 original.depth(),
                 original.ridges(),
-                original.initialDensityWithoutJaggedness(),
+                original.preliminarySurfaceLevel(),
                 wrap(original.finalDensity(), gap, cellBased),
                 original.veinToggle(),
                 original.veinRidged(),
