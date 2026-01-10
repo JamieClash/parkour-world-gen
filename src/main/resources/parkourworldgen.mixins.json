@@ -3,6 +3,7 @@
   "package": "me.jamieclash.parkourworldgen.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ChunkNoiseSamplerMixin",
     "CreateWorldScreenCreateMixin",
     "CreateWorldScreenMixin",
     "NoiseChunkGeneratorMixin"

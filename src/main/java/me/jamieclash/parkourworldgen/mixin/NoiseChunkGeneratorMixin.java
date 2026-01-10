@@ -3,6 +3,7 @@ package me.jamieclash.parkourworldgen.mixin;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import me.jamieclash.parkourworldgen.chunk.SparseColumnMaskDensityFunction;
 import me.jamieclash.parkourworldgen.world.ParkourWorldState;
+import me.jamieclash.parkourworldgen.world.WorldGenContext;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.MultiNoiseBiomeSource;
 import net.minecraft.world.biome.source.TheEndBiomeSource;
@@ -28,75 +29,20 @@ public abstract class NoiseChunkGeneratorMixin {
     @Unique
     private static final int END = 2;
 
-    @Unique
-    private static final NoiseRouter[] CACHED_ROUTERS = new NoiseRouter[3];
-
-    @Inject(
-            method = "createChunkNoiseSampler",
-            at = @At("HEAD")
-    )
-    private void injectColumnMask(
-            Chunk chunk,
-            StructureAccessor world,
-            Blender blender,
-            NoiseConfig noiseConfig,
-            CallbackInfoReturnable<ChunkNoiseSampler> cir
+    @Inject(method = "createChunkNoiseSampler", at = @At("HEAD"))
+    private void setDim(
+            Chunk chunk, StructureAccessor world, Blender blender,
+            NoiseConfig noiseConfig, CallbackInfoReturnable<ChunkNoiseSampler> cir
     ) {
-        NoiseChunkGenerator self = (NoiseChunkGenerator) (Object) this;
-        int dim = getDimension(self);
-
-        NoiseRouter router = getOrCreateRouter(dim, noiseConfig.getNoiseRouter());
-
-        try {
-            Field routerField = NoiseConfig.class.getDeclaredField("noiseRouter");
-            routerField.setAccessible(true);
-            routerField.set(noiseConfig, router);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        WorldGenContext.set(getDimension((NoiseChunkGenerator)(Object)this));
     }
 
-    @Unique
-    private static NoiseRouter getOrCreateRouter(int dim, NoiseRouter original){
-        NoiseRouter cached = CACHED_ROUTERS[dim];
-        if(cached != null){
-            return cached;
-        }
-
-        int gap;
-        boolean cellBased;
-
-        if (dim == END){
-            gap = ParkourWorldState.endGap;
-            cellBased = false;
-        }else if (dim == NETHER){
-            gap = ParkourWorldState.netherGap;
-            cellBased = true;
-        }else{
-            gap = ParkourWorldState.overworldGap;
-            cellBased = false;
-        }
-
-        NoiseRouter newRouter = new NoiseRouter(
-                original.barrierNoise(),
-                original.fluidLevelFloodednessNoise(),
-                original.fluidLevelSpreadNoise(),
-                original.lavaNoise(),
-                original.temperature(),
-                original.vegetation(),
-                original.continents(),
-                original.erosion(),
-                original.depth(),
-                original.ridges(),
-                original.initialDensityWithoutJaggedness(),
-                wrap(original.finalDensity(), gap, cellBased),
-                original.veinToggle(),
-                original.veinRidged(),
-                original.veinGap()
-        );
-
-        CACHED_ROUTERS[dim] = newRouter;
-        return newRouter;
+    @Inject(method = "createChunkNoiseSampler", at = @At("RETURN"))
+    private void clearDim(
+            Chunk chunk, StructureAccessor world, Blender blender,
+            NoiseConfig noiseConfig, CallbackInfoReturnable<ChunkNoiseSampler> cir
+    ) {
+        WorldGenContext.clear();
     }
 
     @Unique
@@ -111,10 +57,5 @@ public abstract class NoiseChunkGeneratorMixin {
             return OVERWORLD;
         }
         return OVERWORLD;
-    }
-
-    @Unique
-    private static DensityFunction wrap(DensityFunction original, int gap, boolean cellBased){
-        return new SparseColumnMaskDensityFunction(original, gap, cellBased);
     }
 }
