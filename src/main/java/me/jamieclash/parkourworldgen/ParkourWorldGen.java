@@ -12,6 +12,5 @@ public class ParkourWorldGen implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-
 	}
 }

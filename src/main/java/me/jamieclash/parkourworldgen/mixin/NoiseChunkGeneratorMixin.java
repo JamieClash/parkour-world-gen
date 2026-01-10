@@ -1,5 +1,6 @@
 package me.jamieclash.parkourworldgen.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import me.jamieclash.parkourworldgen.chunk.SparseColumnMaskDensityFunction;
 import me.jamieclash.parkourworldgen.world.ParkourWorldState;
 import net.minecraft.world.biome.source.BiomeSource;
@@ -17,8 +18,6 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Mixin(NoiseChunkGenerator.class)
 public abstract class NoiseChunkGeneratorMixin {
@@ -30,7 +29,7 @@ public abstract class NoiseChunkGeneratorMixin {
     private static final int END = 2;
 
     @Unique
-    private static final Map<Integer, NoiseRouter> CACHED_ROUTERS = new ConcurrentHashMap<>();
+    private static final NoiseRouter[] CACHED_ROUTERS = new NoiseRouter[3];
 
     @Inject(
             method = "createChunkNoiseSampler",
@@ -46,10 +45,6 @@ public abstract class NoiseChunkGeneratorMixin {
         NoiseChunkGenerator self = (NoiseChunkGenerator) (Object) this;
         int dim = getDimension(self);
 
-        if(dim == NETHER){
-            return;
-        }
-
         NoiseRouter router = getOrCreateRouter(dim, noiseConfig.getNoiseRouter());
 
         try {
@@ -63,39 +58,45 @@ public abstract class NoiseChunkGeneratorMixin {
 
     @Unique
     private static NoiseRouter getOrCreateRouter(int dim, NoiseRouter original){
-        return CACHED_ROUTERS.computeIfAbsent(dim, d->{
-            int gap;
-            boolean cellBased;
+        NoiseRouter cached = CACHED_ROUTERS[dim];
+        if(cached != null){
+            return cached;
+        }
 
-            if (d == END){
-                gap = ParkourWorldState.endGap;
-                cellBased = false;
-            }else if (d == NETHER){
-                gap = ParkourWorldState.netherGap;
-                cellBased = true;
-            }else{
-                gap = ParkourWorldState.overworldGap;
-                cellBased = false;
-            }
+        int gap;
+        boolean cellBased;
 
-            return new NoiseRouter(
-                    original.barrierNoise(),
-                    original.fluidLevelFloodednessNoise(),
-                    original.fluidLevelSpreadNoise(),
-                    original.lavaNoise(),
-                    original.temperature(),
-                    original.vegetation(),
-                    original.continents(),
-                    original.erosion(),
-                    original.depth(),
-                    original.ridges(),
-                    original.initialDensityWithoutJaggedness(),
-                    wrap(original.finalDensity(), gap, cellBased),
-                    original.veinToggle(),
-                    original.veinRidged(),
-                    original.veinGap()
-            );
-        });
+        if (dim == END){
+            gap = ParkourWorldState.endGap;
+            cellBased = false;
+        }else if (dim == NETHER){
+            gap = ParkourWorldState.netherGap;
+            cellBased = true;
+        }else{
+            gap = ParkourWorldState.overworldGap;
+            cellBased = false;
+        }
+
+        NoiseRouter newRouter = new NoiseRouter(
+                original.barrierNoise(),
+                original.fluidLevelFloodednessNoise(),
+                original.fluidLevelSpreadNoise(),
+                original.lavaNoise(),
+                original.temperature(),
+                original.vegetation(),
+                original.continents(),
+                original.erosion(),
+                original.depth(),
+                original.ridges(),
+                original.initialDensityWithoutJaggedness(),
+                wrap(original.finalDensity(), gap, cellBased),
+                original.veinToggle(),
+                original.veinRidged(),
+                original.veinGap()
+        );
+
+        CACHED_ROUTERS[dim] = newRouter;
+        return newRouter;
     }
 
     @Unique

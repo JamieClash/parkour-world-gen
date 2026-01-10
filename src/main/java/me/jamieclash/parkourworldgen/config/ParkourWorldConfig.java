@@ -6,7 +6,7 @@ public final class ParkourWorldConfig {
     public static boolean end = true;
 
     public static int overworldGap = 2;
-    public static int netherGap = 3;
+    public static int netherGap = 2;
     public static int endGap = 4;
 
     public static void resetDefaults() {
@@ -14,7 +14,7 @@ public final class ParkourWorldConfig {
         nether = true;
         end = true;
         overworldGap = 2;
-        netherGap = 3;
+        netherGap = 2;
         endGap = 4;
     }
 }
