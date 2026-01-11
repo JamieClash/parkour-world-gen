@@ -1,8 +1,7 @@
 package me.jamieclash.parkourworldgen.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import me.jamieclash.parkourworldgen.chunk.SparseColumnMaskDensityFunction;
-import me.jamieclash.parkourworldgen.world.ParkourWorldState;
+import me.jamieclash.parkourworldgen.config.FrozenParkourWorldSettings;
+import me.jamieclash.parkourworldgen.config.ParkourWorldConfig;
 import me.jamieclash.parkourworldgen.world.WorldGenContext;
 import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.biome.source.MultiNoiseBiomeSource;
@@ -10,15 +9,11 @@ import net.minecraft.world.biome.source.TheEndBiomeSource;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.*;
-import net.minecraft.world.gen.densityfunction.DensityFunction;
 import net.minecraft.world.gen.noise.NoiseConfig;
-import net.minecraft.world.gen.noise.NoiseRouter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.lang.reflect.Field;
 
 @Mixin(NoiseChunkGenerator.class)
 public abstract class NoiseChunkGeneratorMixin {
@@ -30,11 +25,12 @@ public abstract class NoiseChunkGeneratorMixin {
     private static final int END = 2;
 
     @Inject(method = "createChunkNoiseSampler", at = @At("HEAD"))
-    private void setDim(
-            Chunk chunk, StructureAccessor world, Blender blender,
+    private void setContext(
+            Chunk chunk, StructureAccessor structureAccessor, Blender blender,
             NoiseConfig noiseConfig, CallbackInfoReturnable<ChunkNoiseSampler> cir
     ) {
-        WorldGenContext.set(getDimension((NoiseChunkGenerator)(Object)this));
+        int dim = getDimension((NoiseChunkGenerator)(Object)this);
+        WorldGenContext.set(dim);
     }
 
     @Inject(method = "createChunkNoiseSampler", at = @At("RETURN"))
@@ -48,14 +44,19 @@ public abstract class NoiseChunkGeneratorMixin {
     @Unique
     private static int getDimension(NoiseChunkGenerator self){
         BiomeSource source = self.getBiomeSource();
-        if(source instanceof TheEndBiomeSource && ParkourWorldState.enableEnd){
+
+        FrozenParkourWorldSettings settings = ParkourWorldConfig.getFrozen();
+        if(settings == null){
+            return -1;
+        }
+
+        if(source instanceof TheEndBiomeSource && settings.enableEnd()){
             return END;
         }else if (source instanceof MultiNoiseBiomeSource){
-            if (!self.getSettings().value().hasAquifers() &&
-                    ParkourWorldState.enableNether){
+            if (!self.getSettings().value().hasAquifers() && settings.enableNether()){
                 return NETHER;
             }
-            if(ParkourWorldState.enableOverworld) {
+            if(settings.enableOverworld()) {
                 return OVERWORLD;
             }
         }

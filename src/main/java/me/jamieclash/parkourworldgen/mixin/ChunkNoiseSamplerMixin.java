@@ -1,21 +1,23 @@
 package me.jamieclash.parkourworldgen.mixin;
 
+import me.jamieclash.parkourworldgen.chunk.ParkourNoiseRouterCache;
 import me.jamieclash.parkourworldgen.chunk.SparseColumnMaskDensityFunction;
-import me.jamieclash.parkourworldgen.world.ParkourWorldState;
+import me.jamieclash.parkourworldgen.config.FrozenParkourWorldSettings;
+import me.jamieclash.parkourworldgen.config.ParkourWorldConfig;
+import me.jamieclash.parkourworldgen.world.ParkourWorldSavedData;
 import me.jamieclash.parkourworldgen.world.WorldGenContext;
-import net.minecraft.world.biome.source.BiomeSource;
-import net.minecraft.world.biome.source.MultiNoiseBiomeSource;
-import net.minecraft.world.biome.source.TheEndBiomeSource;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.gen.chunk.*;
 import net.minecraft.world.gen.densityfunction.DensityFunction;
-import net.minecraft.world.gen.densityfunction.DensityFunctionTypes;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import net.minecraft.world.gen.noise.NoiseRouter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.Map;
+import java.util.WeakHashMap;
 
 @Mixin(ChunkNoiseSampler.class)
 public class ChunkNoiseSamplerMixin {
@@ -24,8 +26,6 @@ public class ChunkNoiseSamplerMixin {
     @Unique
     private static final int END = 2;
 
-    @Unique
-    private static final NoiseRouter[] CACHED_ROUTERS = new NoiseRouter[3];
     @Redirect(
             method = "<init>",
             at = @At(
@@ -38,37 +38,41 @@ public class ChunkNoiseSamplerMixin {
     ) {
         NoiseRouter original = noiseConfig.getNoiseRouter();
 
-        int dim = WorldGenContext.get();
+        int dim = WorldGenContext.getDim();
 
         if (dim == -1){
             return original;
         }
 
-        return getOrCreateRouter(dim, original);
+        FrozenParkourWorldSettings settings = ParkourWorldConfig.getFrozen();
+        if (settings == null){
+            return original;
+        }
+
+        return ParkourNoiseRouterCache.getOrCreate(
+                settings,
+                dim,
+                () -> createRouter(settings, dim, original)
+        );
     }
 
     @Unique
-    private static NoiseRouter getOrCreateRouter(int dim, NoiseRouter original){
-        NoiseRouter cached = CACHED_ROUTERS[dim];
-        if(cached != null){
-            return cached;
-        }
-
+    private static NoiseRouter createRouter(FrozenParkourWorldSettings settings, int dim, NoiseRouter original){
         int gap;
         boolean cellBased;
 
         if (dim == END){
-            gap = ParkourWorldState.endGap;
+            gap = settings.endGap();
             cellBased = false;
         }else if (dim == NETHER){
-            gap = ParkourWorldState.netherGap;
+            gap = settings.netherGap();
             cellBased = true;
         }else{
-            gap = ParkourWorldState.overworldGap;
+            gap = settings.overworldGap();
             cellBased = false;
         }
 
-        NoiseRouter newRouter = new NoiseRouter(
+        return new NoiseRouter(
                 original.barrierNoise(),
                 original.fluidLevelFloodednessNoise(),
                 original.fluidLevelSpreadNoise(),
@@ -85,9 +89,6 @@ public class ChunkNoiseSamplerMixin {
                 original.veinRidged(),
                 original.veinGap()
         );
-
-        CACHED_ROUTERS[dim] = newRouter;
-        return newRouter;
     }
 
     @Unique

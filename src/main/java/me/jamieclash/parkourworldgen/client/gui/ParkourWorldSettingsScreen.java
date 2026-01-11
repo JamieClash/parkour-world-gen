@@ -24,10 +24,10 @@ public class ParkourWorldSettingsScreen extends Screen {
 
         // overworld
         this.addDrawableChild(
-            CyclingButtonWidget.onOffBuilder(ParkourWorldConfig.overworld)
+            CyclingButtonWidget.onOffBuilder(ParkourWorldConfig.enableOverworld)
                 .build(centerX - 100, currY, 200, 20,
                         Text.literal("Enable Overworld Gaps"),
-                        (btn, value) -> ParkourWorldConfig.overworld = value
+                        (btn, value) -> ParkourWorldConfig.enableOverworld = value
                 )
         );
 
@@ -55,10 +55,10 @@ public class ParkourWorldSettingsScreen extends Screen {
         // nether
         currY += 24;
         this.addDrawableChild(
-            CyclingButtonWidget.onOffBuilder(ParkourWorldConfig.nether)
+            CyclingButtonWidget.onOffBuilder(ParkourWorldConfig.enableNether)
                 .build(centerX - 100, currY, 200, 20,
                         Text.literal("Enable Nether Gaps"),
-                        (btn, value) -> ParkourWorldConfig.nether = value
+                        (btn, value) -> ParkourWorldConfig.enableNether = value
                 )
         );
 
@@ -86,10 +86,10 @@ public class ParkourWorldSettingsScreen extends Screen {
         // end
         currY += 24;
         this.addDrawableChild(
-            CyclingButtonWidget.onOffBuilder(ParkourWorldConfig.end)
+            CyclingButtonWidget.onOffBuilder(ParkourWorldConfig.enableEnd)
                 .build(centerX - 100, currY, 200, 20,
                         Text.literal("Enable End Gaps"),
-                        (btn, value) -> ParkourWorldConfig.end = value
+                        (btn, value) -> ParkourWorldConfig.enableEnd = value
                 )
         );
 

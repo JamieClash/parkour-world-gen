@@ -7,7 +7,7 @@ public final class WorldGenContext {
         DIM.set(dim);
     }
 
-    public static int get() {
+    public static int getDim() {
         Integer d = DIM.get();
         return d != null ? d : 0;
     }
