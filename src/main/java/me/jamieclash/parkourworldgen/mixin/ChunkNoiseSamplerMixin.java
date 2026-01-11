@@ -66,7 +66,7 @@ public class ChunkNoiseSamplerMixin {
             cellBased = false;
         }else if (dim == NETHER){
             gap = settings.netherGap();
-            cellBased = true;
+            cellBased = false;
         }else{
             gap = settings.overworldGap();
             cellBased = false;

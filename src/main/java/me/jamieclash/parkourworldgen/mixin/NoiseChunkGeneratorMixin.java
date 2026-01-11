@@ -56,7 +56,7 @@ public abstract class NoiseChunkGeneratorMixin {
             if (!self.getSettings().value().hasAquifers() && settings.enableNether()){
                 return NETHER;
             }
-            if(settings.enableOverworld()) {
+            else if(settings.enableOverworld()) {
                 return OVERWORLD;
             }
         }
