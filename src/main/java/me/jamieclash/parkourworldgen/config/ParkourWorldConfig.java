@@ -10,7 +10,7 @@ public final class ParkourWorldConfig {
     public static boolean enableEnd = true;
 
     public static int overworldGap = 2;
-    public static int netherGap = 2;
+    public static int netherGap = 3;
     public static int endGap = 4;
 
     private static FrozenParkourWorldSettings frozen;

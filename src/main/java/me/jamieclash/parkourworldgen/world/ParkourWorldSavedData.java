@@ -18,7 +18,7 @@ public class ParkourWorldSavedData extends PersistentState {
     public boolean enableEnd = true;
 
     public int overworldGap = 2;
-    public int netherGap = 2;
+    public int netherGap = 3;
     public int endGap = 4;
 
     public ParkourWorldSavedData(){}
@@ -34,7 +34,7 @@ public class ParkourWorldSavedData extends PersistentState {
 
                     Codec.INT.optionalFieldOf("OverworldGap", 2)
                             .forGetter(d -> d.overworldGap),
-                    Codec.INT.optionalFieldOf("NetherGap", 2)
+                    Codec.INT.optionalFieldOf("NetherGap", 3)
                             .forGetter(d -> d.netherGap),
                     Codec.INT.optionalFieldOf("EndGap", 4)
                             .forGetter(d -> d.endGap)
