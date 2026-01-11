@@ -39,6 +39,11 @@ public class ChunkNoiseSamplerMixin {
         NoiseRouter original = noiseConfig.getNoiseRouter();
 
         int dim = WorldGenContext.get();
+
+        if (dim == -1){
+            return original;
+        }
+
         return getOrCreateRouter(dim, original);
     }
 

@@ -48,14 +48,17 @@ public abstract class NoiseChunkGeneratorMixin {
     @Unique
     private static int getDimension(NoiseChunkGenerator self){
         BiomeSource source = self.getBiomeSource();
-        if(source instanceof TheEndBiomeSource){
+        if(source instanceof TheEndBiomeSource && ParkourWorldState.enableEnd){
             return END;
         }else if (source instanceof MultiNoiseBiomeSource){
-            if (!self.getSettings().value().hasAquifers()){
+            if (!self.getSettings().value().hasAquifers() &&
+                    ParkourWorldState.enableNether){
                 return NETHER;
             }
-            return OVERWORLD;
+            if(ParkourWorldState.enableOverworld) {
+                return OVERWORLD;
+            }
         }
-        return OVERWORLD;
+        return -1;
     }
 }
